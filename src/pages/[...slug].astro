@@ -1,0 +1,25 @@
+---
+import Layout from "../components/Layout.astro";
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+
+export const getStaticPaths = (async () => {
+	const entries = await getCollection("vault");
+	return entries.map((entry) => ({
+		params: {
+			slug: entry.id.replace(/(?:^|\/)_?index(?:\.mdx?)?(?:\/)?$/i, ""),
+		},
+		props: entry,
+	}));
+}) satisfies GetStaticPaths;
+
+const entry = Astro.props;
+const { Content, headings } = await render(entry);
+
+const breadcrumbs = Astro.url.pathname.split("/").filter(Boolean);
+const title = headings[0]?.text || entry.id.split("/").pop()?.replace(/\.(md|mdx)$/, "").replace(/[_-]+/g, " ");
+---
+
+<Layout title={title} breadcrumbs={breadcrumbs}>
+	<Content />
+</Layout>
